@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploymate</title>
+    <link rel="icon" href="https://www.google.com/chrome/static/images/chrome-logo-m100.svg" type="image/svg+xml">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --primary-blue: #00bcd4; /* Cyan-like blue */
+            --secondary-blue: #03a9f4; /* Sky blue */
+            
+            /* --- Dark Mode Variables (Default) --- */
+            --text-color: #c8e6ec; 
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-bg: rgba(0, 0, 0, 0.2); 
+            --glow-color: #00c4dd; 
+        }
+
+        /* * =========================================
+         * DEFAULT THEME (DARK MODE)
+         * =========================================
+         */
+
+        body {    
+            font-family: 'Orbitron', sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1511300636408-0efaf99f764d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTI5MjhhfDF8c2VhcmNofDE2fHxmdXR1cmUlMjBjaXR5fGVufDB8fHx8MTcwMTExNTg0MHww&ixlib.rb-4.0.3&q=80&w=1080');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            
+            margin: 0;    
+            padding: 40px 20px;
+            display: flex;    
+            flex-direction: column;
+            align-items: center;    
+            min-height: 100vh;    
+            color: var(--text-color);
+            overflow-x: hidden;    
+            position: relative;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.9)),    
+                        radial-gradient(circle at center, rgba(0,255,255,0.05) 0%, transparent 15%);
+            z-index: 0;
+            transition: background 0.5s ease;
+        }
+
+        /* Animated background lines */
+        .animated-bg-lines {
+            position: fixed;    
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+            transition: opacity 0.5s ease;
+        }
+        .line {
+            position: absolute;
+            background: rgba(0, 229, 255, 0.2);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+            animation: lineMove 15s infinite linear;
+            opacity: 0;
+        }
+        .line:nth-child(1) { width: 2px; height: 100px; left: 10%; animation-delay: 0s; animation-duration: 12s; }
+        .line:nth-child(2) { width: 3px; height: 120px; left: 25%; animation-delay: 3s; animation-duration: 15s; }
+        .line:nth-child(3) { width: 1px; height: 80px; left: 40%; animation-delay: 6s; animation-duration: 10s; }
+        .line:nth-child(4) { width: 2px; height: 110px; left: 60%; animation-delay: 9s; animation-duration: 13s; }
+        .line:nth-child(5) { width: 3px; height: 90px; left: 80%; animation-delay: 12s; animation-duration: 11s; }
+
+        @keyframes lineMove {
+            0% { transform: translateY(-100px); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(calc(100vh + 100px)); opacity: 0; }
+        }
+        
+        /* * =========================================
+         * NEW: HEADER & SEARCH BAR
+         * =========================================
+         */
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1500px; /* Match grid-wrapper */
+            padding: 0 10px;
+            margin-bottom: 30px;
+            z-index: 10;
+            flex-wrap: wrap; /* Allows wrapping on small screens */
+            gap: 20px; /* Adds spacing when items wrap */
+        }
+
+        .main-title {
+            font-size: 3.0em; /* Slightly smaller to fit header */
+            text-shadow: 0 0 20px var(--glow-color), 0 0 10px var(--primary-blue);
+            letter-spacing: 2px;
+            margin: 0; /* Removed bottom margin */
+            text-align: left;
+            z-index: 1;
+            transition: text-shadow 0.5s ease;
+            flex-shrink: 0; /* Prevents title from shrinking */
+        }
+
+        .search-container {
+            position: relative;
+            flex-grow: 1; /* Allows search to fill space */
+            max-width: 500px; /* Max width for search */
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            stroke: var(--primary-blue);
+            opacity: 0.6;
+            z-index: 1;
+            pointer-events: none; /* Allows click-through */
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 14px 20px 14px 55px; /* Left padding for icon */
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1em;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            color: var(--text-color);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-sizing: border-box; /* Ensures padding doesn't break layout */
+        }
+        #searchInput::placeholder {
+            color: var(--text-color);
+            opacity: 0.5;
+        }
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            z-index: 2;
+            margin: 0; /* Removed bottom margin */
+            flex-shrink: 0; /* Prevents toggle from shrinking */
+        }
+        
+        /* * =========================================
+         * GRID & CARDS
+         * =========================================
+         */
+
+        .grid-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));    
+            gap: 25px;    
+            width: 100%;
+            max-width: 1500px;
+            z-index: 1;
+        }
+
+        .container {    
+            background: var(--glass-bg);    
+            backdrop-filter: blur(15px) saturate(180%);    
+            -webkit-backdrop-filter: blur(15px) saturate(180%);    
+            padding: 30px;    
+            border-radius: 25px;    
+            border: 1px solid var(--glass-border);    
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
+                        0 0 20px var(--glow-color);    
+            text-align: center;    
+            position: relative;    
+            transform-style: preserve-3d;
+            /* ENHANCED: Added 'all' for hover transition */
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;    
+            min-height: 340px;    
+        }
+
+        /* ENHANCED: Card hover effect */
+        .container:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), /* Darker shadow */
+                        0 0 30px var(--glow-color); /* Stronger glow */
+        }
+
+        .container::before {    
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            height: 5px;
+            background: linear-gradient(90deg, transparent, var(--glow-color), transparent);
+            border-radius: 25px 25px 0 0;
+            opacity: 0.7;
+            transition: background 0.5s ease;
+        }
+        
+        .logo {
+            width: 80px;    
+            height: 80px;    
+            margin-bottom: 20px;    
+            filter: drop-shadow(0 0 10px var(--primary-blue)) brightness(1.1); 
+            transform: translateZ(30px);    
+            transition: filter 0.5s ease;
+            align-self: center;    
+        }
+
+        /* FIXED: Moved inline style to CSS */
+        .logo.logo-padded {
+            padding: 10px;
+            box-sizing: border-box; /* Ensures padding doesn't add to dimensions */
+        }
+        
+        h2 {    
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8em;    
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px var(--glow-color), 0 0 4px var(--primary-blue);    
+            transform: translateZ(20px);    
+            letter-spacing: 1px;
+            transition: text-shadow 0.5s ease;
+        }
+        
+        p {    
+            font-family: 'Share Tech Mono', monospace;    
+            font-size: 1em;    
+            line-height: 1.6;
+            margin-bottom: 25px;    
+            opacity: 0.85;
+            transform: translateZ(10px);    
+            flex-grow: 1;    
+        }
+
+        /* * =========================================
+         * NEW: METADATA TAGS
+         * =========================================
+         */
+
+        .metadata-tags {
+            margin-bottom: 25px; /* Space before button */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            transform: translateZ(10px); /* Match paragraph */
+        }
+        .tag {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8em;
+            background: rgba(0, 188, 212, 0.15);
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            color: var(--primary-blue);
+            padding: 4px 10px;
+            border-radius: 15px;
+            text-shadow: 0 0 5px var(--glow-color);
+            transition: all 0.3s ease;
+        }
+        
+        .download-button {    
+            background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));    
+            color: #000;    
+            padding: 12px 35px;    
+            border: none;    
+            border-radius: 60px;    
+            cursor: pointer;    
+            font-size: 1.1em;    
+            text-decoration: none;    
+            display: inline-block;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);    
+            box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4);    
+            transform: translateZ(25px);    
+            position: relative;
+            overflow: hidden;    
+            align-self: center;    
+        }
+        .download-button::before {    
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: skewX(-30deg);
+            transition: all 0.5s;
+        }
+        .download-button:hover::before { left: 100%; }
+        .download-button:hover {    
+            transform: translateZ(35px) translateY(-5px) scale(1.05);    
+            box-shadow: 0 10px 30px rgba(0, 229, 255, 0.6);    
+        }
+
+        /* * =========================================
+         * THEME TOGGLE SWITCH
+         * =========================================
+         */
+        
+        /* FIXED: Changed from span to label for semantics */
+        .theme-switch-label {
+            margin: 0 10px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1em;
+            text-shadow: 0 0 5px var(--glow-color);
+            transition: text-shadow 0.5s ease, color 0.5s ease;
+            cursor: pointer; /* Make label clickable */
+        }
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333;
+            border: 1px solid var(--primary-blue);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            /* Sun icon */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-blue);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+            /* Moon icon */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="%23fff" stroke="%23fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>');
+        }
+
+        /* * =========================================
+         * LIGHT MODE
+         * =========================================
+         */
+        body.light-mode {
+            background-image: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            color: #333; 
+        }
+        body.light-mode::before {
+            background: none; 
+        }
+        body.light-mode .animated-bg-lines {
+            opacity: 0; 
+        }
+        body.light-mode .main-title {
+            color: #1a2b4d;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        /* Light mode search */
+        body.light-mode #searchInput {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+        body.light-mode #searchInput::placeholder {
+            color: #555;
+            opacity: 0.8;
+        }
+        body.light-mode .search-icon {
+            stroke: var(--secondary-blue);
+        }
+        body.light-mode .theme-switch-label {
+            color: #333;
+            text-shadow: none;
+        }
+        body.light-mode .container {
+            background: rgba(255, 255, 255, 0.6); 
+            backdrop-filter: blur(10px) saturate(150%);
+            -webkit-backdrop-filter: blur(10px) saturate(150%);
+            border: 1px solid rgba(0, 0, 0, 0.1); 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+        }
+        /* Light mode card hover */
+        body.light-mode .container:hover {
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        body.light-mode .container::before {
+            background: linear-gradient(90deg, transparent, var(--secondary-blue), transparent);
+        }
+        body.light-mode .logo {
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); 
+        }
+        body.light-mode h2 {
+            color: #003366;
+            text-shadow: none;
+        }
+        body.light-mode p {
+            color: #555;
+            opacity: 1;
+        }
+        /* Light mode tags */
+        body.light-mode .tag {
+            background: rgba(3, 169, 244, 0.1);
+            border-color: rgba(3, 169, 244, 0.3);
+            color: #0056b3;
+            text-shadow: none;
+        }
+        body.light-mode .download-button {
+            background: linear-gradient(90deg, #0056b3, var(--secondary-blue));
+            color: #fff; 
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+        }
+        body.light-mode .download-button:hover {
+            box-shadow: 0 10px 30px rgba(0, 123, 255, 0.5);    
+        }
+        
+        /* * =========================================
+         * RESPONSIVENESS
+         * =========================================
+         */
+        
+        @media (max-width: 800px) {
+            .main-header {
+                flex-direction: column; /* Stack header items */
+                justify-content: center;
+                gap: 20px;
+            }
+            .main-title {
+                text-align: center;
+                font-size: 2.5em;
+            }
+            .search-container {
+                width: 90%;
+                max-width: none;
+                order: 3; /* Put search last */
+            }
+            .theme-switch-wrapper {
+                order: 2; /* Put toggle after title */
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    
+    <div class="animated-bg-lines">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+    </div>
+
+    <header class="main-header">
+        <h1 class="main-title">Deploymate</h1>
+        
+        <div class="search-container">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="searchInput" placeholder="Search software by name or tag...">
+        </div>
+
+        <div class="theme-switch-wrapper">
+            <label class="theme-switch-label" for="checkbox">Light</label>
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" checked />
+                <div class="slider"></div>
+            </label>
+            <label class="theme-switch-label" for="checkbox">Dark</label>
+        </div>
+    </header>
+
+    <div class="grid-wrapper">
+
+        <div class="container">
+            <img src="https://www.google.com/chrome/static/images/chrome-logo-m100.svg" alt="Chrome Logo" class="logo">
+            <h2>Chrome Enterprise</h2>
+            <p>Secure, fast browsing for your organization. (Enterprise Bundle ZIP)</p>
+            <div class="metadata-tags">
+                <span class="tag">Browser</span>
+                <span class="tag">Enterprise</span>
+                <span class="tag">Google</span>
+            </div>
+            <a href="https://dl.google.com/tag/s/appguid%3D%3B8A69D345-D564-463C-AFF1-A69D9E530F96%7D%26iid%3D%3B773B1FFA-F3CE-4646-8FDD-CF83D5A465A9%7D%26browser%3D4%26usagestats%3D1%26appname%3DGoogle%2520Chrome%26needsadmin%3Dtrue%26ap%3Dx64-stable-statsdef_0%26brand%3DGCEB/dl/chrome/install/GoogleChromeEnterpriseBundle64.zip"    
+               class="download-button"    
+               download="GoogleChromeEnterpriseBundle64.zip">
+               DOWNLOAD
+            </a>
+        </div>
+        
+        <div class="container">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Firefox_logo%2C_2019.svg" alt="Firefox Logo" class="logo">
+            <h2>Mozilla Firefox</h2>
+            <p>A fast, private, and open-source web browser. (Offline Installer)</p>
+            <div class="metadata-tags">
+                <span class="tag">Browser</span>
+                <span class="tag">Privacy</span>
+                <span class="tag">Open-Source</span>
+            </div>
+            <a href="https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US"    
+               class="download-button"    
+               download="FirefoxSetup.exe">
+               DOWNLOAD
+            </a>
+        </div>
+        
+        <div class="container">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/7z-logo.svg" alt="7-Zip Logo" class="logo logo-padded">
+            <h2>7-Zip</h2>
+            <p>High-compression file archiver for .zip, .rar, and .7z files.</p>
+            <div class="metadata-tags">
+                <span class="tag">Utility</span>
+                <span class="tag">Archiver</span>
+                <span class="tag">Productivity</span>
+            </div>
+            <a href="https://www.7-zip.org/a/7z2405-x64.exe"    
+               class="download-button"    
+               download="7zSetup-x64.exe">
+               DOWNLOAD
+            </a>
+        </div>
+        
+        <div class="container">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e6/VLC_Icon.svg" alt="VLC Logo" class="logo">
+            <h2>VLC Player (32-bit)</h2>
+            <p>Aapke dwara pradan kiya gaya 32-bit version. Yeh media player sab kuch play karta hai.</p>
+            <div class="metadata-tags">
+                <span class="tag">Media</span>
+                <span class="tag">Player</span>
+                <span class="tag">Video</span>
+                <span class="tag">32-bit</span>
+            </div>
+            <a href="https://mirrors.in.sahilister.net/videolan/vlc/3.0.21/win32/vlc-3.0.21-win32.exe"    
+               class="download-button"    
+               download="vlc-3.0.21-win32.exe">
+               DOWNLOAD
+            </a>
+        </div>
+        
+        <div class="container">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg" alt="VS Code Logo" class="logo">
+            <h2>VS Code</h2>
+            <p>A powerful, lightweight code editor for all your development needs.</p>
+            <div class="metadata-tags">
+                <span class="tag">Developer</span>
+                <span class="tag">Editor</span>
+                <span class="tag">Microsoft</span>
+            </div>
+            <a href="https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user"    
+               class="download-button"    
+               download="VSCodeUserSetup-x64.exe">
+               DOWNLOAD
+            </a>
+        </div>
+
+    </div> 
+
+<script>
+    // --- THEME TOGGLE SCRIPT ---
+    const toggleSwitch = document.querySelector('#checkbox');
+    const body = document.body;
+
+    function switchTheme(e) {
+        if (e.target.checked) {
+            // --- This is DARK MODE ---
+            body.classList.remove('light-mode');
+        } else {
+            // --- This is LIGHT MODE ---
+            body.classList.add('light-mode');
+        }
+    }
+    toggleSwitch.addEventListener('change', switchTheme);
+
+
+    // --- NEW: SEARCH FILTER SCRIPT ---
+    const searchInput = document.getElementById('searchInput');
+    const gridWrapper = document.querySelector('.grid-wrapper');
+    const containers = gridWrapper.querySelectorAll('.container');
+
+    function filterSoftware() {
+        const filter = searchInput.value.toLowerCase();
+        
+        containers.forEach(container => {
+            // Get text content from title, description, and tags
+            const title = container.querySelector('h2').textContent.toLowerCase();
+            const description = container.querySelector('p').textContent.toLowerCase();
+            const tags = Array.from(container.querySelectorAll('.tag')).map(tag => tag.textContent.toLowerCase()).join(' ');
+
+            // Check if filter text exists in any of them
+            if (title.includes(filter) || description.includes(filter) || tags.includes(filter)) {
+                container.style.display = ""; // Show the card
+            } else {
+                container.style.display = "none"; // Hide the card
+            }
+        });
+    }
+
+    // Add event listener to the search bar
+    searchInput.addEventListener('keyup', filterSoftware);
+
+</script>
+
+</body>
+</html>
